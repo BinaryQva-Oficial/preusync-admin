@@ -2,10 +2,10 @@
  * ============================================================================
  * Proyecto: PreuSync Admin Panel
  * Archivo: api.js
- * Versión: v2.0.0
+ * Versión: v2.1.0
  * Descripción: Cliente HTTP centralizado para interactuar con la API de PreuSync.
  *              Soporta acciones CRUD completas (crear, editar, eliminar) para
- *              contenidos, usuarios, denuncias, ubicaciones y horarios.
+ *              contenidos, usuarios, denuncias de posts en DB2, ubicaciones y horarios.
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -295,6 +295,16 @@ export class ApiClient {
   // --- REPORTES Y DENUNCIAS ---
   static getBugReports() {
     return ApiClient.request('/reports');
+  }
+
+  static getPostReports() {
+    return ApiClient.request('/reports/posts');
+  }
+
+  static deletePostReport(id) {
+    return ApiClient.request(`/reports/posts/${id}`, {
+      method: 'DELETE'
+    });
   }
 
   static sendBugReport(reportData) {

@@ -2,9 +2,10 @@
  * ============================================================================
  * Proyecto: PreuSync Admin Panel
  * Archivo: api.js
- * Versión: v1.1.0
+ * Versión: v2.0.0
  * Descripción: Cliente HTTP centralizado para interactuar con la API de PreuSync.
- *              Incluye endpoints de creación de posts, eventos, efemérides y gestión de usuarios.
+ *              Soporta acciones CRUD completas (crear, editar, eliminar) para
+ *              contenidos, usuarios, denuncias, ubicaciones y horarios.
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -91,7 +92,7 @@ export class ApiClient {
     return false;
   }
 
-  // --- ENDPOINTS CORE ---
+  // --- AUTENTICACIÓN Y USUARIOS ---
   static login(username, password) {
     return ApiClient.request('/auth/login', {
       method: 'POST',
@@ -104,43 +105,110 @@ export class ApiClient {
   }
 
   static getUserByUsername(username) {
-    return ApiClient.request(`/users/by-username/${encodeURIComponent(username)}`);
+    return ApiClient.request(`/auth/profile/${encodeURIComponent(username)}`);
   }
 
-  static updateUserRoleStatus(userId, updateData) {
-    return ApiClient.request(`/users/${userId}/role`, {
-      method: 'PUT',
-      body: JSON.stringify(updateData)
+  static updateUser(userId, updateData) {
+    return ApiClient.request('/auth/update', {
+      method: 'POST',
+      body: JSON.stringify({ userId, ...updateData })
     });
   }
 
+  static deleteUser(userId) {
+    return ApiClient.request(`/users/${userId}`, {
+      method: 'DELETE'
+    });
+  }
+
+  // --- UBICACIONES Y ESTRUCTURA ESCOLAR ---
   static getProvinces() {
     return ApiClient.request('/schools/provinces');
+  }
+
+  static addProvince(provinceData) {
+    return ApiClient.request('/schools/provinces', {
+      method: 'POST',
+      body: JSON.stringify(provinceData)
+    });
+  }
+
+  static deleteProvince(id) {
+    return ApiClient.request(`/schools/provinces/${id}`, {
+      method: 'DELETE'
+    });
   }
 
   static getMunicipalities(provinceId) {
     return ApiClient.request(`/schools/municipalities?provinceId=${provinceId}`);
   }
 
+  static addMunicipality(municipalityData) {
+    return ApiClient.request('/schools/municipalities', {
+      method: 'POST',
+      body: JSON.stringify(municipalityData)
+    });
+  }
+
+  static deleteMunicipality(id) {
+    return ApiClient.request(`/schools/municipalities/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
   static getSchools(municipalityId) {
     return ApiClient.request(`/schools/institutions?municipalityId=${municipalityId}`);
+  }
+
+  static addSchool(schoolData) {
+    return ApiClient.request('/schools', {
+      method: 'POST',
+      body: JSON.stringify(schoolData)
+    });
+  }
+
+  static deleteSchool(id) {
+    return ApiClient.request(`/schools/${id}`, {
+      method: 'DELETE'
+    });
   }
 
   static getGroups(schoolId) {
     return ApiClient.request(`/groups?schoolId=${schoolId}`);
   }
 
+  static addGroup(groupData) {
+    return ApiClient.request('/groups', {
+      method: 'POST',
+      body: JSON.stringify(groupData)
+    });
+  }
+
+  static deleteGroup(id) {
+    return ApiClient.request(`/groups/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
+  // --- HORARIOS ---
   static getSchedule(group, schoolId) {
     return ApiClient.request(`/schedule?group=${encodeURIComponent(group)}&schoolId=${schoolId}`);
   }
 
   static upsertSchedule(scheduleData) {
-    return ApiClient.request('/schedules', {
+    return ApiClient.request('/schedule', {
       method: 'POST',
       body: JSON.stringify(scheduleData)
     });
   }
 
+  static deleteSchedule(group, schoolId) {
+    return ApiClient.request(`/schedule?group=${encodeURIComponent(group)}&schoolId=${schoolId}`, {
+      method: 'DELETE'
+    });
+  }
+
+  // --- PUBLICACIONES (POSTS) ---
   static getTopPosts(limit = 10) {
     return ApiClient.request(`/posts/top?limit=${limit}`);
   }
@@ -156,6 +224,13 @@ export class ApiClient {
     });
   }
 
+  static deletePost(id) {
+    return ApiClient.request(`/posts/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
+  // --- NOTICIAS ---
   static getTopNews(limit = 10) {
     return ApiClient.request(`/news/top?limit=${limit}`);
   }
@@ -171,6 +246,13 @@ export class ApiClient {
     });
   }
 
+  static deleteNews(id) {
+    return ApiClient.request(`/news/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
+  // --- EVENTOS ---
   static getSchoolEvents(schoolId, start = 0, count = 20) {
     return ApiClient.request(`/events/school?start=${start}&count=${count}&schoolId=${schoolId}`);
   }
@@ -186,6 +268,13 @@ export class ApiClient {
     });
   }
 
+  static deleteEvent(id) {
+    return ApiClient.request(`/events/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
+  // --- EFEMÉRIDES ---
   static getEphemeris(date) {
     return ApiClient.request(`/ephemeris?date=${encodeURIComponent(date)}`);
   }
@@ -199,6 +288,24 @@ export class ApiClient {
 
   static deleteEphemeris(id) {
     return ApiClient.request(`/ephemeris/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
+  // --- REPORTES Y DENUNCIAS ---
+  static getBugReports() {
+    return ApiClient.request('/reports');
+  }
+
+  static sendBugReport(reportData) {
+    return ApiClient.request('/reports', {
+      method: 'POST',
+      body: JSON.stringify(reportData)
+    });
+  }
+
+  static deleteReport(id) {
+    return ApiClient.request(`/reports/${id}`, {
       method: 'DELETE'
     });
   }

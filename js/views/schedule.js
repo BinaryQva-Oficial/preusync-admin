@@ -2,9 +2,10 @@
  * ============================================================================
  * Proyecto: PreuSync Admin Panel
  * Archivo: schedule.js
- * Versión: v1.3.0
+ * Versión: v2.0.0
  * Descripción: Editor Dinámico de Horarios Escolares con restricción de edición
- *              en pausas (CI, D5, R, AZ) y selector desplegable de asignaturas para turnos (T1-T8).
+ *              en pausas (CI, D5, R, AZ), selector desplegable de asignaturas
+ *              para turnos (T1-T8) y limpieza de horario.
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -59,6 +60,10 @@ export async function renderScheduleEditor(container) {
           <p class="text-sm text-slate-500 dark:text-slate-400">Administra los turnos, recesos y materias de cada grupo en tiempo real</p>
         </div>
         <div class="flex items-center gap-3">
+          <button id="btnClearSchedule" class="px-3.5 py-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 text-rose-600 dark:text-rose-400 font-semibold text-xs border border-rose-200 dark:border-rose-800 transition-all flex items-center gap-1.5">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+            Limpiar Horario
+          </button>
           <button id="btnSaveSchedule" class="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold text-sm shadow-sm transition-all flex items-center gap-2">
             <i data-lucide="save" class="w-4 h-4"></i>
             Guardar Cambios
@@ -168,6 +173,19 @@ export async function renderScheduleEditor(container) {
   });
 
   document.getElementById('btnSaveSchedule').addEventListener('click', saveScheduleData);
+
+  document.getElementById('btnClearSchedule').addEventListener('click', async () => {
+    if (confirm(`¿Desea limpiar todas las asignaciones del grupo ${currentGroup}?`)) {
+      currentMatrix = Array(16).fill(null).map(() => Array(5).fill('?'));
+      renderTableRows();
+      try {
+        await ApiClient.deleteSchedule(currentGroup, currentSchoolId);
+        alert('Horario del grupo limpiado exitosamente');
+      } catch (e) {
+        alert('Horario reajustado localmente a blanco.');
+      }
+    }
+  });
 
   loadSchools();
 }

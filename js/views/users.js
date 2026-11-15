@@ -2,8 +2,9 @@
  * ============================================================================
  * Proyecto: PreuSync Admin Panel
  * Archivo: users.js
- * Versión: v1.1.0
- * Descripción: Gestor de Usuarios, Asignación de Roles y Moderación de Estatus.
+ * Versión: v2.0.0
+ * Descripción: Gestor de Usuarios, Asignación de Roles, Moderación de Estatus
+ *              y Eliminación Directa de Cuentas.
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -18,7 +19,7 @@ export async function renderUsersManager(container) {
     <div class="space-y-6 animate-fade-in">
       <div>
         <h1 class="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100">Gestión de Usuarios y Roles</h1>
-        <p class="text-sm text-slate-500 dark:text-slate-400">Busca perfiles de usuarios, asigna roles académicos y cambia el estado de las cuentas</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Busca perfiles de usuarios, asigna roles académicos, cambia estatus o elimina cuentas</p>
       </div>
 
       <!-- Buscador de Usuario -->
@@ -79,9 +80,15 @@ export async function renderUsersManager(container) {
               </div>
             </div>
 
-            <button id="btnSaveUserRole" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition-all shadow-sm">
-              Guardar Cambios de Usuario
-            </button>
+            <div class="flex items-center justify-between pt-2">
+              <button id="btnSaveUserRole" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition-all shadow-sm">
+                Guardar Cambios de Usuario
+              </button>
+
+              <button id="btnDeleteUser" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs transition-all shadow-sm">
+                Eliminar Cuenta de Usuario
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -130,10 +137,24 @@ export async function renderUsersManager(container) {
     const newStatus = document.getElementById('editUserStatus').value;
 
     try {
-      await ApiClient.updateUserRoleStatus(foundUserData.id, { role: newRole, status: newStatus });
+      await ApiClient.updateUser(foundUserData.id, { role: newRole, status: newStatus });
       alert('¡Rol y estado actualizados exitosamente!');
     } catch (e) {
       alert('Error al actualizar usuario: ' + e.message);
+    }
+  });
+
+  document.getElementById('btnDeleteUser').addEventListener('click', async () => {
+    if (!foundUserData || !foundUserData.id) return;
+    if (confirm(`¿Desea eliminar definitivamente la cuenta de @${foundUserData.username}?`)) {
+      try {
+        await ApiClient.deleteUser(foundUserData.id);
+        alert('Cuenta eliminada exitosamente');
+        document.getElementById('userResultCard').classList.add('hidden');
+        foundUserData = null;
+      } catch (e) {
+        alert('Error al eliminar usuario: ' + e.message);
+      }
     }
   });
 }

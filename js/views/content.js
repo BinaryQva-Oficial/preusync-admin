@@ -2,9 +2,9 @@
  * ============================================================================
  * Proyecto: PreuSync Admin Panel
  * Archivo: content.js
- * Versión: v1.4.0
- * Descripción: Gestor de Contenidos con soporte completo para adjunción de imágenes
- *              en Noticias, Posts, Eventos y Efemérides.
+ * Versión: v2.0.0
+ * Descripción: Gestor de Contenidos con soporte para creación, visualización y
+ *              eliminación directa de Noticias, Posts, Eventos y Efemérides.
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -30,7 +30,7 @@ export async function renderContentManager(container) {
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 class="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100">Centro de Contenidos</h1>
-          <p class="text-sm text-slate-500 dark:text-slate-400">Administra Noticias, Publicaciones de Comunidad, Eventos y Efemérides con soporte de imágenes</p>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Administra Noticias, Publicaciones de Comunidad, Eventos y Efemérides con borrado en 1 clic</p>
         </div>
       </div>
 
@@ -178,14 +178,37 @@ async function loadNewsList() {
       container.innerHTML = '<div class="p-4 text-center text-slate-400 text-sm">No hay noticias registradas.</div>';
     } else {
       container.innerHTML = items.map(n => `
-        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 space-y-1">
-          <h4 class="font-bold text-slate-800 dark:text-slate-200 text-sm">${n.headline}</h4>
-          <p class="text-xs text-slate-500 dark:text-slate-400">${n.details}</p>
-          <div class="flex items-center gap-3 pt-2 text-[11px] text-purple-600 dark:text-purple-400 font-semibold">
-            <span>Fuente: ${n.source || 'PreuSync'}</span>
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 flex items-start justify-between gap-4">
+          <div class="space-y-1">
+            <h4 class="font-bold text-slate-800 dark:text-slate-200 text-sm">${n.headline}</h4>
+            <p class="text-xs text-slate-500 dark:text-slate-400">${n.details}</p>
+            <div class="flex items-center gap-3 pt-2 text-[11px] text-purple-600 dark:text-purple-400 font-semibold">
+              <span>Fuente: ${n.source || 'PreuSync'}</span>
+            </div>
           </div>
+          <button data-delete-news="${n.id}" class="px-3 py-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 text-rose-600 dark:text-rose-400 text-xs font-semibold border border-rose-200 dark:border-rose-800 transition-all flex items-center gap-1">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            Eliminar
+          </button>
         </div>
       `).join('');
+
+      if (window.lucide) window.lucide.createIcons();
+
+      container.querySelectorAll('[data-delete-news]').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const id = e.currentTarget.dataset.deleteNews;
+          if (confirm('¿Desea eliminar esta noticia definitivamente?')) {
+            try {
+              await ApiClient.deleteNews(id);
+              alert('Noticia eliminada exitosamente');
+              loadNewsList();
+            } catch (err) {
+              alert('Error al eliminar noticia: ' + err.message);
+            }
+          }
+        });
+      });
     }
   } catch (e) {
     container.innerHTML = '<div class="p-4 text-center text-rose-400 text-sm">Error al cargar noticias.</div>';
@@ -269,15 +292,38 @@ async function loadPostsList() {
       container.innerHTML = '<div class="p-4 text-center text-slate-400 text-sm">No hay publicaciones comunitarias.</div>';
     } else {
       container.innerHTML = posts.map(p => `
-        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 space-y-1">
-          <h4 class="font-bold text-slate-800 dark:text-slate-200 text-sm">${p.title || p.details}</h4>
-          <p class="text-xs text-slate-500 dark:text-slate-400">${p.details}</p>
-          <div class="flex items-center gap-3 pt-2 text-[11px] text-amber-600 dark:text-amber-400 font-semibold">
-            <span>Autor: @${p.author || 'Usuario'}</span>
-            <span>• Votos: ${p.score || 0}</span>
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 flex items-start justify-between gap-4">
+          <div class="space-y-1">
+            <h4 class="font-bold text-slate-800 dark:text-slate-200 text-sm">${p.title || p.details}</h4>
+            <p class="text-xs text-slate-500 dark:text-slate-400">${p.details}</p>
+            <div class="flex items-center gap-3 pt-2 text-[11px] text-amber-600 dark:text-amber-400 font-semibold">
+              <span>Autor: @${p.author || 'Usuario'}</span>
+              <span>• Votos: ${p.score || 0}</span>
+            </div>
           </div>
+          <button data-delete-post="${p.id}" class="px-3 py-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 text-rose-600 dark:text-rose-400 text-xs font-semibold border border-rose-200 dark:border-rose-800 transition-all flex items-center gap-1">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            Eliminar
+          </button>
         </div>
       `).join('');
+
+      if (window.lucide) window.lucide.createIcons();
+
+      container.querySelectorAll('[data-delete-post]').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const id = e.currentTarget.dataset.deletePost;
+          if (confirm('¿Desea eliminar esta publicación definitivamente de la comunidad?')) {
+            try {
+              await ApiClient.deletePost(id);
+              alert('Publicación eliminada exitosamente');
+              loadPostsList();
+            } catch (err) {
+              alert('Error al eliminar publicación: ' + err.message);
+            }
+          }
+        });
+      });
     }
   } catch (e) {
     container.innerHTML = '<div class="p-4 text-center text-rose-400 text-sm">Error al cargar publicaciones.</div>';

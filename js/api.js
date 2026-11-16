@@ -2,10 +2,9 @@
  * ============================================================================
  * Proyecto: PreuSync Admin Panel
  * Archivo: api.js
- * Versión: v2.1.0
+ * Versión: v2.2.0
  * Descripción: Cliente HTTP centralizado para interactuar con la API de PreuSync.
- *              Soporta acciones CRUD completas (crear, editar, eliminar) para
- *              contenidos, usuarios, denuncias de posts en DB2, ubicaciones y horarios.
+ *              Soporta consultas de detalle por ID y resúmenes livianos en listados.
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -217,6 +216,10 @@ export class ApiClient {
     return ApiClient.request(`/posts/range?start=${start}&count=${count}`);
   }
 
+  static getPostById(id) {
+    return ApiClient.request(`/posts/${id}`);
+  }
+
   static addPost(postData) {
     return ApiClient.request('/posts', {
       method: 'POST',
@@ -237,6 +240,10 @@ export class ApiClient {
 
   static getNewsRange(start = 0, count = 20) {
     return ApiClient.request(`/news/range?start=${start}&count=${count}`);
+  }
+
+  static getNewsById(id) {
+    return ApiClient.request(`/news/${id}`);
   }
 
   static addNews(newsData) {
@@ -261,6 +268,10 @@ export class ApiClient {
     return ApiClient.request(`/events/external?start=${start}&count=${count}`);
   }
 
+  static getEventById(id) {
+    return ApiClient.request(`/events/${id}`);
+  }
+
   static addEvent(eventData) {
     return ApiClient.request('/events', {
       method: 'POST',
@@ -277,6 +288,10 @@ export class ApiClient {
   // --- EFEMÉRIDES ---
   static getEphemeris(date) {
     return ApiClient.request(`/ephemeris?date=${encodeURIComponent(date)}`);
+  }
+
+  static getEphemerisById(id) {
+    return ApiClient.request(`/ephemeris/${id}`);
   }
 
   static addEphemeris(ephemerisData) {
